@@ -41,4 +41,14 @@ public class PlayerController : MonoBehaviour
 
         heldTime = 0;
     }
+
+    private void OnTriggerEnter2D(Collider2D collision) {
+        if (collision.CompareTag("Obstacle - Target")) {
+            Debug.Log("AGHHHHHHH");
+        } else if (collision.CompareTag("Obstacle - Score Point")) {
+            Debug.Log("YEAHHH");
+        }
+        
+    }
+
 }

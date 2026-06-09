@@ -6,11 +6,16 @@ using UnityEngine;
 public class ObstacleController : MonoBehaviour
 {   
     public int Speed;
+    public bool addedPoint = false;
 
     public void MoveObst() {
         transform.position = new Vector3(
             Speed * Time.deltaTime + transform.position.x,
             transform.position.y, transform.position.z
         );
+    }
+
+    public int getValue(int minSpeed) {
+        return Speed - minSpeed;
     }
 }
