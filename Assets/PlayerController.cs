@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using TreeEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.XR;
@@ -11,8 +10,10 @@ public class PlayerController : MonoBehaviour
     public float power = 20;
     public float gravity = 200;
     // Start is called before the first frame update
+    private Rigidbody2D rb;  
     void Start() {
         // vel = Vector3.zero;
+        rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -25,14 +26,19 @@ public class PlayerController : MonoBehaviour
 
         // vel.y = vel.y < 0 ? 0 : vel.y - gravity * Time.deltaTime;
         // transform.position += vel;
-        transform.position = (new Vector3(0, Mathf.Clamp(transform.position.y, 0, 10), 0));
+        transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, 0, 6), 0);
+        if (transform.position.y >= 5.3) {
+            rb.velocity = Vector2.zero;
+        }
     }
 
     void handleJump() {
-        heldTime = Mathf.Clamp(heldTime, 0.01f, 5);
+        rb.velocity = Vector2.zero;
         float pow = heldTime * power;
+        pow = Mathf.Clamp(pow, 50, 215);
         Debug.Log("Jumping with power of " + pow);
-        // vel.y += pow;
+        rb.AddForce(new Vector3(0, pow, 0));
+
         heldTime = 0;
     }
 }
