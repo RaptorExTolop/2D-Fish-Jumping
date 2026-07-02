@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Obstacle - Target
   - Obstacle - Score Point
+  - water
   layers:
   - Default
   - TransparentFX

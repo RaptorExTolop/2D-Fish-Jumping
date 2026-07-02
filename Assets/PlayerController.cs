@@ -1,41 +1,65 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
-using UnityEngine.XR;
+
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject water;
     private float heldTime;
     public float power = 20;
-    public float gravity = 200;
-    // Start is called before the first frame update
     private Rigidbody2D rb;  
+
+    public GameObject gameManagerObject;
+    private GameManager gManager;
+    private bool charging;
+    public Interval heldTimeClamp;
+    [SerializeField] private bool inWater;
+    public UnityEngine.UI.Image uiBar;
+
     void Start() {
-        // vel = Vector3.zero;
         rb = GetComponent<Rigidbody2D>();
+        gManager = gameManagerObject.GetComponent<GameManager>();
+        uiBar.fillAmount = 0;
     }
 
-    // Update is called once per frame
-    void Update() {
-        if (Input.GetKey(KeyCode.Space)) {
+    void OnEnable() {
+        charging = false;
+        inWater = true;
+		uiBar.fillAmount = 0;
+	}
+
+	// Update is called once per frame
+	void Update() {
+        uiBar.fillAmount = ((float)(heldTime - heldTimeClamp.Min) / (float)(heldTimeClamp.Max - heldTimeClamp.Min)) * 100;
+        Debug.Log(((float)(heldTime - heldTimeClamp.Min) / (float)(heldTimeClamp.Max - heldTimeClamp.Min)) * 100);
+
+		if (Input.GetKeyDown(KeyCode.Space) && inWater) {
+            charging = true;
+        } else if (Input.GetKeyUp(KeyCode.Space)) {
+            charging = false;
+        } else if (heldTime != 0 && !charging) {
+            charging = false;
+            HandleJump();
+        }
+
+        if (charging) {
             heldTime += Time.deltaTime;
-        } else if (heldTime != 0) {
-            handleJump();
         }
 
         // vel.y = vel.y < 0 ? 0 : vel.y - gravity * Time.deltaTime;
         // transform.position += vel;
-        transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, 0, 6), 0);
         if (transform.position.y >= 5.3) {
             rb.velocity = Vector2.zero;
         }
+        transform.position = new Vector3(transform.position.x, Math.Clamp(transform.position.y, -2, float.PositiveInfinity), transform.position.z);
     }
 
-    void handleJump() {
+    void HandleJump() {
         rb.velocity = Vector2.zero;
         float pow = heldTime * power;
-        pow = Mathf.Clamp(pow, 50, 215);
+        pow = Mathf.Clamp(pow, heldTimeClamp.Min, heldTimeClamp.Max);
         Debug.Log("Jumping with power of " + pow);
         rb.AddForce(new Vector3(0, pow, 0));
 
@@ -43,12 +67,19 @@ public class PlayerController : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
+        Debug.Log($"ooooOOOOoOoo {collision.name} with tag: {collision.tag} hit me something baAAAaAAAAaaAAaad");
         if (collision.CompareTag("Obstacle - Target")) {
-            Debug.Log("AGHHHHHHH");
+            gManager.EndGame();
         } else if (collision.CompareTag("Obstacle - Score Point")) {
-            Debug.Log("YEAHHH");
-        }
-        
+            gManager.AddScore(1);
+        } 
     }
 
+    void OnTriggerStay2D(Collider2D collision) {
+        inWater = false;
+        //Debug.Log($"ooooOOOOoOoo {collision.name} with tag: {collision.tag} hit me something baAAAaAAAAaaAAaad");
+        if (collision.CompareTag("water")) {
+            inWater = true;
+        }
+    }
 }
